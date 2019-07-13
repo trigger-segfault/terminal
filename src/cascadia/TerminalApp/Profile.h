@@ -62,6 +62,10 @@ private:
     static winrt::Microsoft::Terminal::Settings::ScrollbarState ParseScrollbarState(const std::wstring& scrollbarState);
     static winrt::Windows::UI::Xaml::Media::Stretch ParseImageStretchMode(const std::string_view imageStretchMode);
     static std::string_view SerializeImageStretchMode(const winrt::Windows::UI::Xaml::Media::Stretch imageStretchMode);
+    static winrt::Windows::UI::Xaml::HorizontalAlignment ParseImageHorizontalAlignment(const std::string_view imageHorizontalAlignment);
+    static std::string_view SerializeImageHorizontalAlignment(const winrt::Windows::UI::Xaml::HorizontalAlignment imageHorizontalAlignment);
+    static winrt::Windows::UI::Xaml::VerticalAlignment ParseImageVerticalAlignment(const std::string_view imageVerticalAlignment);
+    static std::string_view SerializeImageVerticalAlignment(const winrt::Windows::UI::Xaml::VerticalAlignment imageVerticalAlignment);
     static winrt::Microsoft::Terminal::Settings::CursorStyle _ParseCursorShape(const std::wstring& cursorShapeString);
     static std::wstring_view _SerializeCursorStyle(const winrt::Microsoft::Terminal::Settings::CursorStyle cursorShape);
 
@@ -91,6 +95,8 @@ private:
     std::optional<std::wstring> _backgroundImage;
     std::optional<double> _backgroundImageOpacity;
     std::optional<winrt::Windows::UI::Xaml::Media::Stretch> _backgroundImageStretchMode;
+    std::optional<winrt::Windows::UI::Xaml::HorizontalAlignment> _backgroundImageHorizontalAlignment;
+    std::optional<winrt::Windows::UI::Xaml::VerticalAlignment> _backgroundImageVerticalAlignment;
 
     std::optional<std::wstring> _scrollbarState;
     bool _closeOnExit;

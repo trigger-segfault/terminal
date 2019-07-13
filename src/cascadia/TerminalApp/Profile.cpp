@@ -41,6 +41,8 @@ static constexpr std::string_view IconKey{ "icon" };
 static constexpr std::string_view BackgroundImageKey{ "backgroundImage" };
 static constexpr std::string_view BackgroundImageOpacityKey{ "backgroundImageOpacity" };
 static constexpr std::string_view BackgroundimageStretchModeKey{ "backgroundImageStretchMode" };
+static constexpr std::string_view BackgroundImageHorizontalAlignmentKey{ "backgroundImageHorizontalAlignment" };
+static constexpr std::string_view BackgroundImageVerticalAlignmentKey{ "backgroundImageVerticalAlignment" };
 
 // Possible values for Scrollbar state
 static constexpr std::wstring_view AlwaysVisible{ L"visible" };
@@ -58,6 +60,16 @@ static constexpr std::string_view ImageStretchModeNone{ "none" };
 static constexpr std::string_view ImageStretchModeFill{ "fill" };
 static constexpr std::string_view ImageStretchModeUniform{ "uniform" };
 static constexpr std::string_view ImageStretchModeUniformTofill{ "uniformToFill" };
+
+// Possible values for Image Horizontal Alignment
+static constexpr std::string_view ImageHorizontalAlignmentCenter{ "center" };
+static constexpr std::string_view ImageHorizontalAlignmentLeft{ "left" };
+static constexpr std::string_view ImageHorizontalAlignmentRight{ "right" };
+
+// Possible values for Image Vertical Alignment
+static constexpr std::string_view ImageVerticalAlignmentCenter{ "center" };
+static constexpr std::string_view ImageVerticalAlignmentTop{ "top" };
+static constexpr std::string_view ImageVerticalAlignmentBottom{ "bottom" };
 
 Profile::Profile() :
     Profile(Utils::CreateGuid())
@@ -91,7 +103,9 @@ Profile::Profile(const winrt::guid& guid) :
     _icon{},
     _backgroundImage{},
     _backgroundImageOpacity{},
-    _backgroundImageStretchMode{}
+    _backgroundImageStretchMode{},
+    _backgroundImageHorizontalAlignment{},
+    _backgroundImageVerticalAlignment{}
 {
 }
 
@@ -202,6 +216,16 @@ TerminalSettings Profile::CreateTerminalSettings(const std::vector<ColorScheme>&
         terminalSettings.BackgroundImageStretchMode(_backgroundImageStretchMode.value());
     }
 
+    if (_backgroundImageHorizontalAlignment)
+    {
+        terminalSettings.BackgroundImageHorizontalAlignment(_backgroundImageHorizontalAlignment.value());
+    }
+
+    if (_backgroundImageVerticalAlignment)
+    {
+        terminalSettings.BackgroundImageVerticalAlignment(_backgroundImageVerticalAlignment.value());
+    }
+
     return terminalSettings;
 }
 
@@ -296,6 +320,16 @@ Json::Value Profile::ToJson() const
     if (_backgroundImageStretchMode)
     {
         root[JsonKey(BackgroundimageStretchModeKey)] = SerializeImageStretchMode(_backgroundImageStretchMode.value()).data();
+    }
+
+    if (_backgroundImageHorizontalAlignment)
+    {
+        root[JsonKey(BackgroundImageHorizontalAlignmentKey)] = SerializeImageHorizontalAlignment(_backgroundImageHorizontalAlignment.value()).data();
+    }
+
+    if (_backgroundImageVerticalAlignment)
+    {
+        root[JsonKey(BackgroundImageVerticalAlignmentKey)] = SerializeImageVerticalAlignment(_backgroundImageVerticalAlignment.value()).data();
     }
 
     return root;
@@ -433,6 +467,14 @@ Profile Profile::FromJson(const Json::Value& json)
     if (auto backgroundImageStretchMode{ json[JsonKey(BackgroundimageStretchModeKey)] })
     {
         result._backgroundImageStretchMode = ParseImageStretchMode(backgroundImageStretchMode.asString());
+    }
+    if (auto backgroundImageHorizontalAlignment{ json[JsonKey(BackgroundImageHorizontalAlignmentKey)] })
+    {
+        result._backgroundImageHorizontalAlignment = ParseImageHorizontalAlignment(backgroundImageHorizontalAlignment.asString());
+    }
+    if (auto backgroundImageVerticalAlignment{ json[JsonKey(BackgroundImageVerticalAlignmentKey)] })
+    {
+        result._backgroundImageVerticalAlignment = ParseImageVerticalAlignment(backgroundImageVerticalAlignment.asString());
     }
 
     return result;
@@ -653,6 +695,96 @@ std::string_view Profile::SerializeImageStretchMode(const winrt::Windows::UI::Xa
     default:
     case winrt::Windows::UI::Xaml::Media::Stretch::UniformToFill:
         return ImageStretchModeUniformTofill;
+    }
+}
+
+// Method Description:
+// - Helper function for converting a user-specified image horizontal alignment
+//   to the appropriate enum value
+// Arguments:
+// - The value from the profiles.json file
+// Return Value:
+// - The corresponding enum value which maps to the string provided by the user
+winrt::Windows::UI::Xaml::HorizontalAlignment Profile::ParseImageHorizontalAlignment(const std::string_view imageHorizontalAlignment)
+{
+    if (imageHorizontalAlignment == ImageHorizontalAlignmentLeft)
+    {
+        return winrt::Windows::UI::Xaml::HorizontalAlignment::Left;
+    }
+    else if (imageHorizontalAlignment == ImageHorizontalAlignmentRight)
+    {
+        return winrt::Windows::UI::Xaml::HorizontalAlignment::Right;
+    }
+    else // Fall through to default behavior
+    {
+        return winrt::Windows::UI::Xaml::HorizontalAlignment::Center;
+    }
+}
+
+// Method Description:
+// - Helper function for converting an ImageHorizontalAlignment to the
+//   correct string value.
+// Arguments:
+// - imageHorizontalAlignment: The enum value to convert to a string.
+// Return Value:
+// - The string value for the given ImageHorizontalAlignment
+std::string_view Profile::SerializeImageHorizontalAlignment(const winrt::Windows::UI::Xaml::HorizontalAlignment imageHorizontalAlignment)
+{
+    switch (imageHorizontalAlignment)
+    {
+    case winrt::Windows::UI::Xaml::HorizontalAlignment::Left:
+        return ImageHorizontalAlignmentLeft;
+    case winrt::Windows::UI::Xaml::HorizontalAlignment::Right:
+        return ImageHorizontalAlignmentRight;
+    default:
+    // HorizontalAlignment Stretch is unsupported and serialized as default.
+    case winrt::Windows::UI::Xaml::HorizontalAlignment::Center:
+        return ImageHorizontalAlignmentCenter;
+    }
+}
+
+// Method Description:
+// - Helper function for converting a user-specified image vertical alignment
+//   to the appropriate enum value
+// Arguments:
+// - The value from the profiles.json file
+// Return Value:
+// - The corresponding enum value which maps to the string provided by the user
+winrt::Windows::UI::Xaml::VerticalAlignment Profile::ParseImageVerticalAlignment(const std::string_view imageVerticalAlignment)
+{
+    if (imageVerticalAlignment == ImageVerticalAlignmentTop)
+    {
+        return winrt::Windows::UI::Xaml::VerticalAlignment::Top;
+    }
+    else if (imageVerticalAlignment == ImageVerticalAlignmentBottom)
+    {
+        return winrt::Windows::UI::Xaml::VerticalAlignment::Bottom;
+    }
+    else // Fall through to default behavior
+    {
+        return winrt::Windows::UI::Xaml::VerticalAlignment::Center;
+    }
+}
+
+// Method Description:
+// - Helper function for converting an ImageVerticalAlignment to the
+//   correct string value.
+// Arguments:
+// - imageVerticalAlignment: The enum value to convert to a string.
+// Return Value:
+// - The string value for the given ImageVerticalAlignment
+std::string_view Profile::SerializeImageVerticalAlignment(const winrt::Windows::UI::Xaml::VerticalAlignment imageVerticalAlignment)
+{
+    switch (imageVerticalAlignment)
+    {
+    case winrt::Windows::UI::Xaml::VerticalAlignment::Top:
+        return ImageVerticalAlignmentTop;
+    case winrt::Windows::UI::Xaml::VerticalAlignment::Bottom:
+        return ImageVerticalAlignmentBottom;
+    default:
+    // VerticalAlignment Stretch is unsupported and serialized as default.
+    case winrt::Windows::UI::Xaml::VerticalAlignment::Center:
+        return ImageVerticalAlignmentCenter;
     }
 }
 
